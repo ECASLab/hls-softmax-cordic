@@ -99,34 +99,70 @@ inline CORDICState cordic_hyperbolic_core(fixed_t z_input) {
 inline float cordic_exp_hls(float x_input) {
 #pragma HLS INLINE off
 
-    // Conversion y Entrada
+    // Conversion y Entrada (float -> fixed_t)
     fixed_t x = x_input;
 
     // 1. Saturacion
+    if (x > fixed_t(8.0)) x = fixed_t(8.0); // Sat. Superior
+    if (x < fixed_t(-8.0)) x = fixed_t(-8.0); // Sat. Inferior
 
-    // 2. Valor Abs
-
+    // 2. Valor Abs 
+    fixed_t abs_x;
+    if (x >= fixed_t(0))
+    {
+        abs_x = x; // x positivo -> Mantener
+    
+    } else 
+    {
+        abs_x = -x; // x negativo -> Negar 
+    }
+    
     // 3. Reduccion de Rango: e^x = 2^n * e^(x')
+    ap_int<6> n = 0; 
+    fixed_t x_prime = x; // Residuo Reducido
 
+    // Solo reducir si x es grande
+    if (abs_x > CORDICConstants::MAX_REDUCED) 
+    {
+        fixed_t half = fixed_t(0.5); // Redondeo
+
+        // Calc. n = round(x / LN2)
+        fixed_t scaled = x * CORDICConstants::INV_LN2;
+        
         // a. Redondeo
-
-        // Para Num +
-
-            // Redondea hacia Arriba
-
-            // Redondea hacia Abajo
-
-        // Para Num -
+        if (scaled >= fixed_t(0))
+        {
+            // Para Num +
+            n = static_cast<int>(scaled + half); // Redondea hacia Arriba
+        } else
+        {
+            // Para Num -
+            n = static_cast<int>(scaled - half); // Redondea hacia Abajo
+        }
 
         // b. Extrac. de Residuo
+        x_prime = x - fixed_t(n) * CORDICConstants::LN2;
+    }
+    
+        
 
-    // 4. Iter. CORDIC
+        
+
+            
+
+            
+
+        
+
+        
+
+    // 4. Iter. CORDIC HB
 
     // 5. Reconstruccion: e^(x') = cosh(x') + sinh(x')
 
     // 6. Restauracion: e^x = e^(x') * 2^n 
 
-    // Conversion y Salida
+    // Conversion y Salida (fixed_t -> float)
 
 }
 
