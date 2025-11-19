@@ -119,7 +119,7 @@ inline float cordic_exp_hls(float x_input) {
     
     // 3. Reduccion de Rango: e^x = 2^n * e^(x')
     ap_int<6> n = 0; 
-    fixed_t x_prime = x; // Residuo Reducido
+    fixed_t x_prime = x; // Residuo Reducido o no
 
     // Solo reducir si x es grande
     if (abs_x > CORDICConstants::MAX_REDUCED) 
@@ -144,26 +144,18 @@ inline float cordic_exp_hls(float x_input) {
         x_prime = x - fixed_t(n) * CORDICConstants::LN2;
     }
     
-        
-
-        
-
-            
-
-            
-
-        
-
-        
-
     // 4. Iter. CORDIC HB
+    CORDICState result = cordic_hyperbolic_core(x_prime);
 
     // 5. Reconstruccion: e^(x') = cosh(x') + sinh(x')
+    fixed_t exp_x_prime = result.X + result.Y;
 
     // 6. Restauracion: e^x = e^(x') * 2^n 
+    fixed_t exp_x = (n >= 0) ? (exp_x_prime << n) // n>0: Multiplicar
+                             : (exp_x_prime >> (-n)); // n<0: Dividr
 
     // Conversion y Salida (fixed_t -> float)
-
+    return static_cast<float>(exp_x);
 }
 
 
