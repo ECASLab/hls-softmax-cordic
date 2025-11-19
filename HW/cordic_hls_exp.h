@@ -10,9 +10,9 @@ typedef ap_uint<4> iter_t; // Contador: Rango 0-15
 
 // Constantes
 namespace CORDICConstants {
-    const fixed_t LN2 = 0.693147180559945; // Reduccion de Rango 
-    const fixex_t INV_LN2 = 1.442695040888963;
-    const fixed_t MAX_REDUCED = 0.347;
+    const fixed_t LN2 = 0.693147180559945; // Reduccion de Rango -  0.693145752
+    const fixex_t INV_LN2 = 1.442695040888963; // - 1.442687988
+    const fixed_t MAX_REDUCED = 0.347; // - 0.346984863
     const iter_t MAX_ITERATIONS = 10;
 
         // Tabla de Ang. HB: ANGLES[k-1] = atanh(2^-k)
@@ -69,5 +69,66 @@ inline void cordic_hyperbolic_step(CORDICState& s, int k, const fixed_t& angle) 
     }
 }
 
+// Nucleo - CORDIC
+inline CORDICState cordic_hyperbolic_core(fixed_t z_input) {
+#pragma HLS INLINE off
 
-#endif 
+    // 1. Init. Estado: (X,Y,Z) = (1, 0, z_input)
+    CORDICState s;
+    s.Z = z_input;
+
+    // 2. Sec. de Iter. CORDIC
+    cordic_hyperbolic_step(s, 1, CORDICConstants::ANGLES[0]); // k=1
+    cordic_hyperbolic_step(s, 2, CORDICConstants::ANGLES[1]); // k=2
+    cordic_hyperbolic_step(s, 3, CORDICConstants::ANGLES[2]); // k=3
+    cordic_hyperbolic_step(s, 4, CORDICConstants::ANGLES[3]); // k=4
+    cordic_hyperbolic_step(s, 4, CORDICConstants::ANGLES[3]); // k=4 Rep
+    cordic_hyperbolic_step(s, 5, CORDICConstants::ANGLES[4]); // k=5
+    cordic_hyperbolic_step(s, 6, CORDICConstants::ANGLES[5]); // k=6
+    cordic_hyperbolic_step(s, 7, CORDICConstants::ANGLES[6]); // k=7
+    cordic_hyperbolic_step(s, 8, CORDICConstants::ANGLES[7]); // k=8
+    cordic_hyperbolic_step(s, 9, CORDICConstants::ANGLES[8]); // k=9
+
+
+    // 3. Ret. Estado Final: s.X = cosh(z) s.Y = sinh(z)
+    return s;
+
+}
+
+// Fun. Principal e^x
+inline float cordic_exp_hls(float x_input) {
+#pragma HLS INLINE off
+
+    // Conversion y Entrada
+    fixed_t x = x_input;
+
+    // 1. Saturacion
+
+    // 2. Valor Abs
+
+    // 3. Reduccion de Rango: e^x = 2^n * e^(x')
+
+        // a. Redondeo
+
+        // Para Num +
+
+            // Redondea hacia Arriba
+
+            // Redondea hacia Abajo
+
+        // Para Num -
+
+        // b. Extrac. de Residuo
+
+    // 4. Iter. CORDIC
+
+    // 5. Reconstruccion: e^(x') = cosh(x') + sinh(x')
+
+    // 6. Restauracion: e^x = e^(x') * 2^n 
+
+    // Conversion y Salida
+
+}
+
+
+#endif // CORDIC_EXP_HLS_H
