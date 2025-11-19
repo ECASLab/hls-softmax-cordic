@@ -11,7 +11,7 @@ typedef ap_uint<4> iter_t; // Contador: Rango 0-15
 // Constantes
 namespace CORDICConstants {
     const fixed_t LN2 = 0.693147180559945; // Reduccion de Rango -  0.693145752
-    const fixex_t INV_LN2 = 1.442695040888963; // - 1.442687988
+    const fixed_t INV_LN2 = 1.442695040888963; // - 1.442687988
     const fixed_t MAX_REDUCED = 0.347; // - 0.346984863
     const iter_t MAX_ITERATIONS = 10;
 
@@ -58,7 +58,7 @@ inline void cordic_hyperbolic_step(CORDICState& s, int k, const fixed_t& angle) 
     // 3. Act. Estado segun Sign(Z)
     if(positive) {
         // a. Rotar Positivo
-        s.X = z.X + y_shift;
+        s.X = s.X + y_shift;
         s.Y = s.Y + x_shift;
         s.Z = s.Z - angle; // Red. Z
     } else {
