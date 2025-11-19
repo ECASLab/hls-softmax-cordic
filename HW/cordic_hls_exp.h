@@ -47,7 +47,26 @@ struct CORDICState
 // Movimiento - CORDIC
 inline void cordic_hyperbolic_step(CORDICState& s, int k, const fixed_t& angle) {
 #pragma HLS INLINE
+    
+    // 1. Det. Direccion de Rotacion
+    const bool positive = (s.Z >= fixed_t(0));
 
+    // 2. Cal. Desplazamiento (2^k)
+    const fixed_t x_shift = s.X >> k;
+    const fixed_t y_shift = s.Y >> k;
+
+    // 3. Act. Estado segun Sign(Z)
+    if(positive) {
+        // a. Rotar Positivo
+        s.X = z.X + y_shift;
+        s.Y = s.Y + x_shift;
+        s.Z = s.Z - angle; // Red. Z
+    } else {
+        // b. Rotar Negativo
+        s.X = s.X - y_shift;
+        s.Y = s.Y - x_shift;
+        s.Z = s.Z + angle; // Incr. Z
+    }
 }
 
 
