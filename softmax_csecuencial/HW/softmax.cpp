@@ -33,6 +33,7 @@ pass1_words:
             AccT local_sum;
             GET_NUMBER(local_sum) = 0.0f;
 
+            // A.1 Desempaqueta, Calcula e^x, Acumula Suma Local y Reempaqueta
             pass1_unpack:
                 for (int p = 0; p < kPackets; ++p) {
 #pragma HLS UNROLL
@@ -68,11 +69,36 @@ pass1_words:
         GET_NUMBER(scale) = hls::divide(1.0f, GET_NUMBER(sum));
 
 // B. Calc. de Exp. y Acu. de la Suma Global
+pass2_words:
+        for (uint64_t w = 0; w < size_words; ++w) {
+#pragma HLS PIPELINE II=1
+#pragma HLS LOOP_TRIPCOUNT min=1 max=kTotalMaxSize avg=kTotalMaxSize
 
-        
+            RawDataT raw_exp = out[w]; // Lee los exponentes calc. previamente
+            RawDataT raw_out = 0; // Almacena los resultados normalizados
 
+        // B.1 Desempaqueta, Normaliza y Reempaqueta
+        pass2_unpack:
+            for (int p = 0; p < kPackets; ++p) {
+#pragma HLS UNROLL
+                const int offlow = p * kDataWidth;
+                const int offhigh = offlow + kDataWidth - 1;
 
+                // 1. Extrae el exponente empaquetado
+                AccT ex_val;
+                GET_RAW(ex_val) = raw_exp(offhigh, offlow);
 
+                // 2. Normaliza: y = e^x / sum = e^x * scale
+                AccT y;
+                GET_NUMBER(y) = GET_NUMBER(ex_val) * GET_NUMBER(scale);
 
+                // 3. Reempaqueta el resultado en la palabra de salida
+                raw_out(offhigh, offlow) = GET_RAW(y);
+
+            }
+            // 4. Escribe el Resultado Normalizado en la salida AXI (out) - Softmax
+            out[w] = raw_out;
+
+        }
     }
 }
